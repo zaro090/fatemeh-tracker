@@ -30,24 +30,25 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:#f5f0e8;color:#333;disp
 input,textarea{width:100%;padding:10px 12px;margin:5px 0;border:1px solid #ddd;border-radius:6px;font-size:15px;font-family:inherit;background:#fff;transition:border .2s}
 input:focus,textarea:focus{border-color:#D4AF37;outline:0;box-shadow:0 0 0 2px rgba(212,175,55,.15)}
 textarea{min-height:50px;resize:vertical}
-.item{background:#faf8f5;border:1px solid #e8e0d5;border-radius:6px;padding:10px;margin:6px 0;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;font-size:14px}
-.item>div{flex:1;min-width:60px;margin:3px 0}
-.item-actions{display:flex;gap:4px;flex-wrap:wrap}
+.transaction-card{background:#fff;border:1px solid #e8e0d5;border-radius:8px;padding:12px;margin:8px 0;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.transaction-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.transaction-desc{font-size:16px;font-weight:600;color:#333}
+.transaction-amount{font-size:16px;font-weight:700;color:#B8860B}
+.transaction-meta{display:flex;gap:8px;flex-wrap:wrap;font-size:12px;color:#888;margin-bottom:4px}
+.transaction-tag{display:inline-block;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:600}
+.tag-savings{background:#dff6dd;color:#107c10}
+.tag-debt{background:#fce4e4;color:#a80000}
+.transaction-receipt{background:#f5f0e8;border:1px solid #e0d5c8;border-radius:4px;padding:8px;margin-top:6px;font-size:13px;color:#444;max-height:150px;overflow-y:auto;white-space:pre-wrap;word-break:break-word}
+.transaction-actions{display:flex;gap:4px;margin-top:8px;flex-wrap:wrap}
 .flex-row{display:flex;gap:6px;flex-wrap:wrap}
 .flex-row .btn{flex:1;min-width:50px}
 .footer{text-align:center;padding:10px 0 4px;border-top:1px solid #eee;font-size:11px;color:#999}
 .hidden{display:none!important}
 .toast{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:8px 20px;border-radius:8px;display:none;z-index:999;font-size:14px;box-shadow:0 2px 10px rgba(0,0,0,.15)}
 .back-btn{background:0;border:0;color:#B8860B;font-size:15px;font-weight:700;cursor:pointer;padding:6px 0;margin-bottom:4px}
-.tag{display:inline-block;padding:2px 10px;border-radius:10px;font-size:12px;font-weight:600}
-.tag-savings{background:#dff6dd;color:#107c10}
-.tag-debt{background:#fce4e4;color:#a80000}
 .main-menu-btn{padding:14px;font-size:16px;font-weight:700;min-height:52px;border-radius:8px;background:linear-gradient(135deg,#D4AF37,#C9A030);color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.15)}
 .main-menu-btn:active{background:#B8860B}
 .section-balance{font-weight:700;color:#B8860B;background:#faf8f5;padding:5px 14px;border-radius:6px;display:inline-block;font-size:14px;border:1px solid #e8e0d5}
-.receipt-box{background:#f5f0e8;border:1px solid #e0d5c8;border-radius:4px;padding:8px;margin:4px 0;font-size:13px;color:#444;max-height:200px;overflow-y:auto;white-space:pre-wrap;word-break:break-all}
-.receipt-actions{display:flex;gap:4px;margin-top:4px;flex-wrap:wrap}
-.receipt-actions .btn{font-size:11px;padding:3px 8px;min-height:28px;width:auto;margin:2px}
 .login-box{text-align:center;padding:30px 20px 40px}
 .login-box input{width:100%;padding:12px;margin:12px 0;border:1px solid #ddd;border-radius:8px;font-size:18px;text-align:center;letter-spacing:2px}
 .login-box input:focus{border-color:#D4AF37;outline:0;box-shadow:0 0 0 2px rgba(212,175,55,.15)}
@@ -155,7 +156,6 @@ function copyReceipt(text) {
 navigator.clipboard.writeText(text).then(() => {
 showToast('📋 رسید کپی شد');
 }).catch(() => {
-// راه حل جایگزین برای مرورگرهای قدیمی
 const textarea = document.createElement('textarea');
 textarea.value = text;
 document.body.appendChild(textarea);
@@ -173,12 +173,12 @@ document.getElementById('txDesc').value = t.desc;
 document.getElementById('txAmount').value = t.amount;
 document.getElementById('txReceipt').value = t.receipt || '';
 document.getElementById('txDesc').focus();
-showToast('✏️ در حال ویرایش... بعد از تغییر، دوباره ثبت کن');
+showToast('✏️ در حال ویرایش...');
 }
 
 function renderTransactions(){const list=document.getElementById('transactionsList');list.innerHTML='';const filtered=data.transactions.filter(t=>t.type===currentSection);if(!filtered.length){list.innerHTML='<div class="card" style="text-align:center;color:#888;">هیچ تراکنشی ثبت نشده</div>';updateBalances();return}
-filtered.forEach((t,i)=>{const realIndex=data.transactions.indexOf(t);const div=document.createElement('div');div.className='item';const tagClass=t.type==='savings'?'tag-savings':'tag-debt';const tagName=t.type==='savings'?'قلک':'بدهی';let receiptHtml='';if(t.receipt){receiptHtml='<div class="receipt-box">📎 '+escapeHTML(t.receipt)+'</div><div class="receipt-actions"><button class="btn btn-small btn-gold" onclick="copyReceipt(\''+escapeHTML(t.receipt).replace(/'/g,"\\'")+'\')">📋 کپی</button></div>';}
-div.innerHTML='<div><strong>'+escapeHTML(t.desc)+'</strong><br><span class="tag '+tagClass+'">'+tagName+'</span>'+receiptHtml+'</div><div>'+money(t.amount)+' ریال</div><div style="font-size:12px;color:#888;">'+escapeHTML(t.date||'')+'</div><div class="item-actions"><button class="btn btn-small btn-gold" onclick="editTransaction('+realIndex+')">✏️</button><button class="btn btn-small btn-danger" onclick="deleteTransaction('+realIndex+')">🗑</button></div>';list.appendChild(div)});updateBalances()}
+filtered.forEach((t,i)=>{const realIndex=data.transactions.indexOf(t);const div=document.createElement('div');div.className='transaction-card';const tagClass=t.type==='savings'?'tag-savings':'tag-debt';const tagName=t.type==='savings'?'قلک':'بدهی';let receiptHtml='';if(t.receipt){receiptHtml='<div class="transaction-receipt">📎 '+escapeHTML(t.receipt)+'</div>';}
+div.innerHTML='<div class="transaction-header"><span class="transaction-desc">'+escapeHTML(t.desc)+'</span><span class="transaction-amount">'+money(t.amount)+' ریال</span></div><div class="transaction-meta"><span class="transaction-tag '+tagClass+'">'+tagName+'</span><span>📅 '+escapeHTML(t.date||'')+'</span></div>'+receiptHtml+'<div class="transaction-actions"><button class="btn btn-small btn-gold" onclick="editTransaction('+realIndex+')">✏️ ویرایش</button><button class="btn btn-small btn-danger" onclick="deleteTransaction('+realIndex+')">🗑 حذف</button>'+(t.receipt?'<button class="btn btn-small btn-gold" onclick="copyReceipt(\''+escapeHTML(t.receipt).replace(/'/g,"\\'")+'\')">📋 کپی رسید</button>':'')+'</div>';list.appendChild(div)});updateBalances()}
 
 function escapeHTML(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;')}
 function getTodayShamsi(){const d=new Date();return (d.getFullYear()-621)+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0')}
